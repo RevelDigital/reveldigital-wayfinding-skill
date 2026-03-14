@@ -1,0 +1,42 @@
+name: Package Skill
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate skill
+        run: python scripts/validate_skill.py revel-wayfinding
+
+      - name: Package .skill file
+        run: python scripts/package_skill.py revel-wayfinding dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: revel-wayfinding-skill
+          path: dist/*.skill
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.skill --clobber
