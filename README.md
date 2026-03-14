@@ -1,6 +1,6 @@
-# Revel Digital Wayfinding Skill
+# Revel Digital Wayfinding Skill for Claude
 
-A Claude skill for generating wayfinding floorplan configurations for the [Revel Digital Wayfinding App](https://reveldigital.github.io/wayfinding-app/). Provide floor plan images (or describe your building layout) and this skill generates the complete JSON configuration including locations, waypoint navigation graphs, and a visual preview for verification.
+A [Claude AI Skill](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) that generates wayfinding floorplan configurations for the [Revel Digital Wayfinding App](https://reveldigital.github.io/wayfinding-app/). Provide floor plan images (or describe your building layout) and get a complete JSON configuration with locations, waypoint navigation graphs, and a visual preview for verification.
 
 ## Features
 
@@ -12,12 +12,50 @@ A Claude skill for generating wayfinding floorplan configurations for the [Revel
 
 ## Installation
 
-Download the latest `revel-wayfinding.skill` file from the [latest release](../../releases/tag/latest) and install it in Claude.
+### Claude.ai (Web / Desktop / Mobile)
 
-Alternatively, copy the `revel-wayfinding/` directory to your Claude skills folder:
+1. Download the latest release ZIP from the [Releases](https://github.com/RevelDigital/reveldigital-wayfinding-skill/releases) page, or [download the skill directly](https://github.com/RevelDigital/reveldigital-wayfinding-skill/raw/main/revel-wayfinding-skill.zip)
+2. In Claude, go to **Settings → Features → Skills**
+3. Click **Add Custom Skill** and upload the ZIP
+4. Toggle the skill **ON**
+
+> Requires **Code Execution** to be enabled in Settings → Capabilities.
+
+### Claude Code (CLI)
+
+Copy the skill folder into your personal or project skills directory:
 
 ```
-revel-wayfinding/
+# Personal skills (available in all projects)
+cp -r revel-wayfinding-skill ~/.claude/skills/revel-wayfinding
+
+# Or project-level skills (available only in this repo)
+cp -r revel-wayfinding-skill .claude/skills/revel-wayfinding
+```
+
+### Team / Enterprise Provisioning
+
+Organization Owners can provision this skill for all users:
+
+1. Go to **Organization Settings → Skills**
+2. Upload the ZIP to make it available org-wide
+
+## Usage
+
+Once installed, just ask Claude to generate a wayfinding configuration:
+
+> *"Here's the floor plan for our office building. Can you generate a wayfinding configuration for our Revel Digital kiosk?"*
+
+> *"We have a two-story medical clinic. Ground floor has a main lobby, reception, two exam rooms, and a waiting area. Second floor has four offices, a conference room, and a break room. There's an elevator connecting the floors."*
+
+> *"Create a wayfinding floorplan JSON for this hospital floor plan image"*
+
+Claude will analyze the floor plan, place waypoints, build the navigation graph, validate the output, and render a visual preview.
+
+## Skill Contents
+
+```
+revel-wayfinding-skill/
 ├── SKILL.md                         # Main skill instructions
 ├── scripts/
 │   └── validate.py                  # Floorplan JSON validator
@@ -25,73 +63,20 @@ revel-wayfinding/
     └── floorplan-schema.json        # JSON Schema definition
 ```
 
-## Usage
+## Output
 
-### From a floor plan image
-
-Upload one or more floor plan images and ask Claude to generate the wayfinding configuration:
-
-> Here's the floor plan for our office building. Can you generate a wayfinding configuration for our Revel Digital kiosk?
-
-The skill will:
-1. Analyze the image to identify rooms, corridors, and entrances
-2. Place waypoints at corridor intersections and room doorways
-3. Build the navigation graph with bidirectional connections
-4. Generate the complete JSON configuration
-5. Validate the output
-6. Render a visual preview of the waypoint graph
-
-### From a text description
-
-Describe your building and Claude will generate both SVG floor plans and the JSON configuration:
-
-> We have a two-story medical clinic. Ground floor has a main lobby, reception, two exam rooms, and a waiting area. Second floor has four offices, a conference room, and a break room. There's an elevator connecting the floors.
-
-### Output
-
-The skill produces a `floorplan.json` file conforming to the [Wayfinding Floorplan Schema](https://reveldigital.github.io/wayfinding-app/floorplan-schema.json).
-
-```json
-{
-  "locations": [
-    {
-      "id": "1",
-      "name": "Main Lobby",
-      "category": "Common",
-      "floor": "1",
-      "room": "100",
-      "description": "Welcome desk and visitor check-in.",
-      "icon": "🏥",
-      "tags": ["entrance", "reception"],
-      "waypointId": "f1-lobby"
-    }
-  ],
-  "floors": [
-    {
-      "floor": "1",
-      "label": "Floor 1 — Ground",
-      "image": "https://example.com/floorplan-f1.svg",
-      "imageSize": [1000, 500],
-      "youAreHere": "f1-entrance",
-      "waypoints": [
-        { "id": "f1-entrance", "x": 100, "y": 480, "connections": ["f1-cor-bl"] },
-        { "id": "f1-cor-bl", "x": 100, "y": 305, "connections": ["f1-entrance", "f1-lobby"] },
-        { "id": "f1-lobby", "x": 100, "y": 195, "connections": ["f1-cor-bl"] }
-      ]
-    }
-  ]
-}
-```
+The skill produces a `floorplan.json` file conforming to the [Wayfinding Floorplan Schema](https://reveldigital.github.io/wayfinding-app/floorplan-schema.json). See the [Configuration Guide](https://reveldigital.github.io/wayfinding-app/floorplan-schema.md) for full documentation.
 
 ## Validation
 
 The included validation script checks the generated JSON for common issues:
 
 ```bash
-python revel-wayfinding/scripts/validate.py floorplan.json
+python revel-wayfinding-skill/scripts/validate.py floorplan.json
 ```
 
 Checks performed:
+
 - No duplicate location or waypoint IDs
 - All location `floor` references exist in the floors array
 - All `waypointId` references exist in the correct floor's waypoints
@@ -101,30 +86,28 @@ Checks performed:
 - Waypoint coordinates are within image bounds
 - Navigation graph is fully connected (every room reachable from start)
 
-## Schema
+## Related Resources
 
-The full JSON Schema is available at:
-- [floorplan-schema.json](https://reveldigital.github.io/wayfinding-app/floorplan-schema.json)
-- [Configuration Guide](https://reveldigital.github.io/wayfinding-app/floorplan-schema.md)
+- [Revel Digital Wayfinding App](https://reveldigital.github.io/wayfinding-app/) — The wayfinding app that consumes the generated configuration
+- [Floorplan Schema](https://reveldigital.github.io/wayfinding-app/floorplan-schema.json) — JSON Schema definition
+- [Configuration Guide](https://reveldigital.github.io/wayfinding-app/floorplan-schema.md) — Full schema documentation
+- [Revel Digital Gadget Skill](https://github.com/RevelDigital/reveldigital-gadget-skill) — Companion skill for scaffolding Revel Digital gadgets
 
-## Development
+## Building the .skill ZIP
 
-### Packaging
+To rebuild the distributable ZIP from source:
 
-To build the `.skill` file locally:
-
-```bash
-pip install pyyaml
-python scripts/validate_skill.py revel-wayfinding
-python scripts/package_skill.py revel-wayfinding dist
+```
+cd revel-wayfinding-skill
+zip -r ../revel-wayfinding-skill.zip .
 ```
 
-The packaged file will be at `dist/revel-wayfinding.skill`.
+Or use the included build script:
 
-### CI/CD
-
-A GitHub Actions workflow runs on every push to `main`. It validates the skill, packages the `.skill` file, and publishes it as a rolling `latest` pre-release on the repo's Releases page. The workflow can also be triggered manually via `workflow_dispatch`.
+```
+./build.sh
+```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE) for details.

@@ -1,7 +1,3 @@
-# Build output
-dist/
-*.skill
-
 # Python
 __pycache__/
 *.pyc
