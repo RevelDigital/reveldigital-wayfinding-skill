@@ -1,8 +1,8 @@
 name: Package Skill
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -35,8 +35,13 @@ jobs:
           name: revel-wayfinding-skill
           path: dist/*.skill
 
-      - name: Attach to release
-        if: github.event_name == 'release'
+      - name: Create or update latest release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.skill --clobber
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          git push origin :refs/tags/latest 2>/dev/null || true
+          gh release create latest dist/*.skill \
+            --title "Latest Build" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            --prerelease

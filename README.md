@@ -12,7 +12,7 @@ A Claude skill for generating wayfinding floorplan configurations for the [Revel
 
 ## Installation
 
-Download the latest `.skill` file from [Releases](../../releases) and install it in Claude.
+Download the latest `revel-wayfinding.skill` file from the [latest release](../../releases/tag/latest) and install it in Claude.
 
 Alternatively, copy the `revel-wayfinding/` directory to your Claude skills folder:
 
@@ -123,7 +123,7 @@ The packaged file will be at `dist/revel-wayfinding.skill`.
 
 ### CI/CD
 
-A GitHub Actions workflow automatically packages and attaches the `.skill` file to each release. Create a release tag to trigger it, or run the workflow manually via `workflow_dispatch`.
+A GitHub Actions workflow runs on every push to `main`. It validates the skill, packages the `.skill` file, and publishes it as a rolling `latest` pre-release on the repo's Releases page. The workflow can also be triggered manually via `workflow_dispatch`.
 
 ## License
 
