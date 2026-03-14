@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://RevelDigital.github.io/wayfinding-app/floorplan-schema.json",
+  "title": "Wayfinding Floorplan Configuration",
+  "description": "Schema for configuring the Revel Digital wayfinding application with location data, floor plan images, and waypoint navigation graphs.",
+  "type": "object",
+  "required": ["locations", "floors"],
+  "additionalProperties": false,
+  "properties": {
+    "locations": {
+      "type": "array",
+      "description": "List of navigable destinations within the building.",
+      "items": {
+        "$ref": "#/$defs/Location"
+      }
+    },
+    "floors": {
+      "type": "array",
+      "description": "Floor definitions including image references and waypoint navigation graphs.",
+      "items": {
+        "$ref": "#/$defs/Floor"
+      }
+    }
+  },
+  "$defs": {
+    "Location": {
+      "type": "object",
+      "description": "A navigable destination such as a room, office, or amenity.",
+      "required": ["id", "name", "category", "floor", "room", "description", "icon"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the location."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable display name."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category used for grouping and styling.",
+          "enum": ["Common", "Office", "Conference", "Dining", "Amenity", "Restricted"]
+        },
+        "floor": {
+          "type": "string",
+          "description": "Floor identifier. Must match a floor entry in the 'floors' array."
+        },
+        "room": {
+          "type": "string",
+          "description": "Room number or code."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the location, displayed to visitors."
+        },
+        "icon": {
+          "type": "string",
+          "description": "Emoji or icon character displayed alongside the location name."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Searchable keywords for this location.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "waypointId": {
+          "type": "string",
+          "description": "ID of the waypoint on the floor's navigation graph that corresponds to this location. Must match a waypoint ID in the relevant floor's waypoints array."
+        }
+      }
+    },
+    "Floor": {
+      "type": "object",
+      "description": "Configuration for a single floor, including its image and navigation waypoints.",
+      "required": ["floor", "label", "image", "imageSize", "waypoints", "youAreHere"],
+      "additionalProperties": false,
+      "properties": {
+        "floor": {
+          "type": "string",
+          "description": "Floor identifier. Referenced by locations via their 'floor' field."
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable floor label (e.g. 'Floor 1 — Ground')."
+        },
+        "image": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the floor plan SVG or image file."
+        },
+        "imageSize": {
+          "type": "array",
+          "description": "Image dimensions as [width, height] in pixels. Used to scale the 3D floor plane.",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "youAreHere": {
+          "type": "string",
+          "description": "Waypoint ID for the visitor's starting position on this floor (e.g. building entrance or elevator)."
+        },
+        "waypoints": {
+          "type": "array",
+          "description": "Navigation graph nodes. Waypoints are connected to form walkable paths for route calculation.",
+          "items": {
+            "$ref": "#/$defs/Waypoint"
+          }
+        }
+      }
+    },
+    "Waypoint": {
+      "type": "object",
+      "description": "A node in the floor's navigation graph. Waypoints represent key positions (room entrances, corridor intersections, elevator landings) and their connections define walkable paths.",
+      "required": ["id", "x", "y", "connections"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique waypoint identifier. Referenced by location 'waypointId' and other waypoints' 'connections'."
+        },
+        "x": {
+          "type": "number",
+          "description": "X position in image-pixel coordinates (0 = left edge)."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y position in image-pixel coordinates (0 = top edge)."
+        },
+        "connections": {
+          "type": "array",
+          "description": "IDs of directly connected waypoints. Connections are bidirectional — if A lists B, B should also list A.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isTransport": {
+          "type": "boolean",
+          "description": "If true, this waypoint represents a cross-floor transport (elevator or stairwell). Its connections may include waypoint IDs on other floors."
+        },
+        "transportName": {
+          "type": "string",
+          "description": "Display label for transport waypoints (e.g. 'Main Elevator', 'East Stairwell')."
+        }
+      }
+    }
+  }
+}
